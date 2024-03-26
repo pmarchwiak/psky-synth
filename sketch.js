@@ -17,18 +17,18 @@ class Key {
 }
 
 const keyboard = [
-  new Key('c', 261.63, 25),
-  new Key('c#', 277.18, 60),
-  new Key('d', 293.66, 75),
-  new Key('d#', 311.13, 110),
-  new Key('e', 329.63, 125),
-  new Key('f', 349.23, 175),
-  new Key('f#', 369.99, 210),
-  new Key('g', 392, 225),
-  new Key('g#', 415.3, 260),
-  new Key('a', 440, 275),
-  new Key('a#', 466.16, 310),
-  new Key('b', 493.88, 325)
+  new Key('C4', 261.63, 25),
+  new Key('C#4', 277.18, 60),
+  new Key('D4', 293.66, 75),
+  new Key('D#4', 311.13, 110),
+  new Key('E4', 329.63, 125),
+  new Key('F4', 349.23, 175),
+  new Key('F#4', 369.99, 210),
+  new Key('G4', 392, 225),
+  new Key('G#4', 415.3, 260),
+  new Key('A4', 440, 275),
+  new Key('A#4', 466.16, 310),
+  new Key('B4', 493.88, 325)
 ];
 
 function getMouseKey() {
@@ -42,12 +42,35 @@ function getMouseKey() {
   for (let i = 0; i < keyboard.length; i++) {
     fill('aqua');
     circle(mouseX, mouseY, 20);
-    if (mouseX > keyboard[i].x && 
-        (i === keyboard.length - 1 || mouseX < keyboard[i+1].x)) {
+
+    if (i === keyboard.length - 1) {
       return keyboard[i];
+    }
+    const curKey = keyboard[i];
+    const nextKey = keyboard[i+1];
+    if (curKey.isWhite() && nextKey.isWhite()) {
+      if (mouseX > curKey.x && mouseX < curKey.x + WHITE_KEY_WIDTH) {
+        return keyboard[i];
+      }
+    }
+    else if (curKey.isWhite() && !nextKey.isWhite()) {
+      if (mouseY > (KEYBOARD_START_Y + BLACK_KEY_HEIGHT) 
+          && mouseX > curKey.x && mouseX < curKey.x + WHITE_KEY_WIDTH) {
+        return keyboard[i];
+      }
+      else if (mouseY < (KEYBOARD_START_Y + BLACK_KEY_HEIGHT)
+                && mouseX > curKey.x && mouseX < nextKey.x) {
+        return keyboard[i];
+      }
+      else if (mouseY < (KEYBOARD_START_Y + BLACK_KEY_HEIGHT)
+               && mouseX > nextKey.x && mouseX < nextKey.x + BLACK_KEY_WIDTH) {
+        return keyboard[i+1];
+      }
     }
   }
 }
+
+let playing;
 
 function setup() {
   createCanvas(400, 400);
@@ -65,7 +88,7 @@ function draw() {
   for (let key of keyboard) {
     if (key.isWhite()) {
       fill('white');
-      rect(key.x, 200, WHITE_KEY_WIDTH, WHITE_KEY_HEIGHT);
+      rect(key.x, KEYBOARD_START_Y, WHITE_KEY_WIDTH, WHITE_KEY_HEIGHT);
     }
   }
 
@@ -80,12 +103,16 @@ function draw() {
   if (mouseIsPressed) {
     let key = getMouseKey();
     if (key) {
-      fill('black');
-      textFont('Baskerville', 12);
-      text('note: ' + key.noteName, 350, 380);
-      osc.start();
+      if (!playing) {
+        osc.start();
+        playing = true;
+      }
       osc.freq(key.freq);
       osc.amp(1.0, 0.5);
+
+      fill('black');
+      textFont('Baskerville', 12);
+      text(`note: ${key.noteName}, pl: ${playing}`, 300, 380);
     }
   }
 
@@ -104,5 +131,6 @@ function draw() {
 }
 
 function mouseReleased() {
-  osc.amp(0, 0.5);
+  osc.amp(0, 0.7);
+  playing = false;
 }
