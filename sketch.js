@@ -71,23 +71,52 @@ function getMouseKey() {
 }
 
 let playing;
+let playingKey;
+let pickedType = 'triangle';
+let osc;
+
+function updateOscType(picked) {
+  pickedType = picked;
+  osc = new p5.Oscillator(pickedType);
+}
 
 function setup() {
   createCanvas(400, 400);
-  osc = new p5.Oscillator('sine');
+  updateOscType(pickedType);
 }
 
 function draw() {
-
   background('aqua');
   fill('black');
   textFont('Baskerville', 25)
   text('a little synth', 30, 50);
   
+  if (mouseIsPressed) {
+    let key = getMouseKey();
+    if (key) {
+      if (!playing) {
+        osc.start();
+        playing = true;
+        playingKey = key;
+      }
+      osc.freq(key.freq);
+      osc.amp(1.0, 0.5);
+
+      fill('black');
+      textFont('Baskerville', 12);
+      text(`note: ${key.noteName}, pl: ${playing}, plKey: ${playingKey.noteName}, type: ${pickedType}`, 20, 380);
+    }
+  }
+
   // white keys
   for (let key of keyboard) {
     if (key.isWhite()) {
-      fill('white');
+      if (playingKey && key.noteName === playingKey.noteName) {
+        fill('grey');
+      }
+      else {
+        fill('white');
+      }
       rect(key.x, KEYBOARD_START_Y, WHITE_KEY_WIDTH, WHITE_KEY_HEIGHT);
     }
   }
@@ -95,42 +124,19 @@ function draw() {
   // black keys 
   for (let key of keyboard) {
     if (!key.isWhite()) {
-      fill('black');
+      if (playingKey && key.noteName === playingKey.noteName) {
+        fill('grey');
+      }
+      else {
+        fill('black');
+      }
       rect(key.x, KEYBOARD_START_Y, BLACK_KEY_WIDTH, BLACK_KEY_HEIGHT);
     }
   }
-
-  if (mouseIsPressed) {
-    let key = getMouseKey();
-    if (key) {
-      if (!playing) {
-        osc.start();
-        playing = true;
-      }
-      osc.freq(key.freq);
-      osc.amp(1.0, 0.5);
-
-      fill('black');
-      textFont('Baskerville', 12);
-      text(`note: ${key.noteName}, pl: ${playing}`, 300, 380);
-    }
-  }
-
-  // fill('white');
-  // for (let i = 0; i < 7; i++) {
-  //   rect(i*50+25,200,50,150);
-  // }
-  
-  // // black keys
-  // fill('black');
-  // rect(60,200,30,100);
-  // rect(110,200,30,100);
-  // rect(210,200,30,100);
-  // rect(260,200,30,100);
-  // rect(310,200,30,100);
 }
 
 function mouseReleased() {
   osc.amp(0, 0.7);
   playing = false;
+  playingKey = null;
 }

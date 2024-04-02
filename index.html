@@ -3,9 +3,48 @@
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.2/lib/p5.js"></script>
     <script src="sketch.js"></script>
     <script src="p5.sound.1.0.2.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <main>
-    </main>
+    <div id="app">
+      <main>
+        <fieldset>
+          <legend>osc type:</legend>
+          <div>picked: {{ picked }}</div>
+          <div>
+            <input type="radio" id="sine" name="type" value="sine" v-model="picked"/>
+            <label for="sine">sine</label>
+          </div>
+        
+          <div>
+            <input type="radio" id="triangle" name="type" value="triangle" v-model="picked"/>
+            <label for="triangle">triangle</label>
+          </div>
+        
+          <div>
+            <input type="radio" id="sawtooth" name="type" value="sawtooth" v-model="picked"/>
+            <label for="sawtooth">sawtooth</label>
+          </div>
+        </fieldset>
+      </main>
+    </div>
+
+    <script type="module">
+      import { createApp, ref, watch } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+    
+      const picked = ref(pickedType);
+      createApp({
+        setup() {
+          return {
+            picked
+          }
+        }
+      }).mount('#app')
+
+      watch(picked, async(newPickedType, oldPickedType) => {
+        updateOscType(newPickedType); 
+      })
+    </script>
   </body>
 </html>
